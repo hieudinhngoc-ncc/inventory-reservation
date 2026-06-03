@@ -1,0 +1,7 @@
+databaseChangeLog:
+  - include:
+      file: migrations/V001__create_schema.sql
+      relativeToChangelogFile: true
+  - include:
+      file: migrations/V002__seed_initial_data.sql
+      relativeToChangelogFile: true
