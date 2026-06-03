@@ -10,10 +10,10 @@ import java.util.List;
 @Data
 public class CreateReservationRequest {
 
-    @NotBlank
+    @NotBlank(message = "Order ID is required")
     private String orderId;
 
-    @NotEmpty
+    @NotEmpty(message = "Reservation must contain at least one item")
     @Valid
     private List<ReservationItemRequest> items;
 }

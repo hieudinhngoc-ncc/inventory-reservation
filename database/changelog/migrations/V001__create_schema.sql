@@ -8,10 +8,11 @@ CREATE TABLE products (
 );
 
 CREATE TABLE inventory (
-    sku             VARCHAR(50) PRIMARY KEY REFERENCES products(sku),
+    sku             VARCHAR(50) PRIMARY KEY REFERENCES products(sku) ON DELETE RESTRICT,
     total_stock     INTEGER     NOT NULL CHECK (total_stock >= 0),
     available_stock INTEGER     NOT NULL CHECK (available_stock >= 0),
-    reserved_stock  INTEGER     NOT NULL DEFAULT 0 CHECK (reserved_stock >= 0)
+    reserved_stock  INTEGER     NOT NULL DEFAULT 0 CHECK (reserved_stock >= 0),
+    CONSTRAINT chk_stock_integrity CHECK (available_stock + reserved_stock = total_stock)
 );
 
 CREATE TABLE reservations (
@@ -25,8 +26,8 @@ CREATE TABLE reservations (
 );
 
 CREATE TABLE reservation_items (
-    reservation_id UUID        NOT NULL REFERENCES reservations(id),
-    sku            VARCHAR(50) NOT NULL REFERENCES products(sku),
+    reservation_id UUID        NOT NULL REFERENCES reservations(id) ON DELETE RESTRICT,
+    sku            VARCHAR(50) NOT NULL REFERENCES products(sku) ON DELETE RESTRICT,
     quantity       INTEGER     NOT NULL CHECK (quantity > 0),
     -- composite PK enforces that a single SKU cannot appear twice in the same reservation
     PRIMARY KEY (reservation_id, sku)

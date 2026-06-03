@@ -1,7 +1,7 @@
 package com.fortna.assignment.inventory_reservation.application.service.impl;
 
-import com.fortna.assignment.inventory_reservation.api.dto.request.CreateReservationRequest;
-import com.fortna.assignment.inventory_reservation.api.dto.request.ReservationItemRequest;
+import com.fortna.assignment.inventory_reservation.application.command.CreateReservationCommand;
+import com.fortna.assignment.inventory_reservation.application.command.ReservationItemCommand;
 import com.fortna.assignment.inventory_reservation.api.dto.response.ReservationResponse;
 import com.fortna.assignment.inventory_reservation.application.mapper.ReservationMapper;
 import com.fortna.assignment.inventory_reservation.domain.exception.InsufficientStockException;
@@ -80,7 +80,7 @@ class ReservationTransactionServiceTest {
 
     @Test
     void createReservation_success_returnsPendingReservation() {
-        CreateReservationRequest request = buildRequest(ORDER_ID, SKU, 10);
+        CreateReservationCommand request = buildCommand(ORDER_ID, SKU, 10);
 
         when(reservationRepository.existsByOrderId(ORDER_ID)).thenReturn(false);
         when(inventoryRepository.findBySkuInWithLock(anyList())).thenReturn(List.of(inventory));
@@ -99,7 +99,7 @@ class ReservationTransactionServiceTest {
     @Test
     void createReservation_insufficientStock_throwsInsufficientStockException() {
         inventory = Inventory.builder().sku(SKU).totalStock(5).availableStock(5).reservedStock(0).build();
-        CreateReservationRequest request = buildRequest(ORDER_ID, SKU, 10);
+        CreateReservationCommand request = buildCommand(ORDER_ID, SKU, 10);
 
         when(reservationRepository.existsByOrderId(ORDER_ID)).thenReturn(false);
         when(inventoryRepository.findBySkuInWithLock(anyList())).thenReturn(List.of(inventory));
@@ -115,7 +115,7 @@ class ReservationTransactionServiceTest {
     void createReservation_duplicateOrderId_throwsOrderAlreadyExistsException() {
         when(reservationRepository.existsByOrderId(ORDER_ID)).thenReturn(true);
 
-        assertThatThrownBy(() -> reservationService.createReservation(buildRequest(ORDER_ID, SKU, 1)))
+        assertThatThrownBy(() -> reservationService.createReservation(buildCommand(ORDER_ID, SKU, 1)))
                 .isInstanceOf(OrderAlreadyExistsException.class);
     }
 
@@ -184,14 +184,15 @@ class ReservationTransactionServiceTest {
                 .isInstanceOf(ReservationNotFoundException.class);
     }
 
-    private CreateReservationRequest buildRequest(String orderId, String sku, int quantity) {
-        ReservationItemRequest item = new ReservationItemRequest();
-        item.setSku(sku);
-        item.setQuantity(quantity);
+    private CreateReservationCommand buildCommand(String orderId, String sku, int quantity) {
+        ReservationItemCommand item = ReservationItemCommand.builder()
+                .sku(sku)
+                .quantity(quantity)
+                .build();
 
-        CreateReservationRequest request = new CreateReservationRequest();
-        request.setOrderId(orderId);
-        request.setItems(List.of(item));
-        return request;
+        return CreateReservationCommand.builder()
+                .orderId(orderId)
+                .items(List.of(item))
+                .build();
     }
 }

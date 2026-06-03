@@ -51,8 +51,9 @@ public class GlobalExceptionHandler {
         return ApiResponse.error("SYSTEM_BUSY", ex.getMessage());
     }
 
-    // Covers both JPA lock timeout and DataIntegrityViolationException from a concurrent duplicate orderId insert
-    @ExceptionHandler({JpaSystemException.class, DataIntegrityViolationException.class})
+    // Covers both JPA lock timeout and DataIntegrityViolationException from a
+    // concurrent duplicate orderId insert
+    @ExceptionHandler({ JpaSystemException.class, DataIntegrityViolationException.class })
     @ResponseStatus(HttpStatus.SERVICE_UNAVAILABLE)
     public ApiResponse<Void> handleLockTimeout(RuntimeException ex) {
         return ApiResponse.error("LOCK_TIMEOUT", "The system is busy processing another request. Please retry.");

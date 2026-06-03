@@ -1,6 +1,6 @@
 package com.fortna.assignment.inventory_reservation.application.service.impl;
 
-import com.fortna.assignment.inventory_reservation.api.dto.request.CreateReservationRequest;
+import com.fortna.assignment.inventory_reservation.application.command.CreateReservationCommand;
 import com.fortna.assignment.inventory_reservation.api.dto.response.ReservationResponse;
 import com.fortna.assignment.inventory_reservation.application.service.ReservationService;
 import com.fortna.assignment.inventory_reservation.domain.exception.SystemBusyException;
@@ -25,7 +25,7 @@ public class ReservationLockFacade implements ReservationService {
     private final ReservationTransactionService transactionService;
 
     @Override
-    public ReservationResponse createReservation(CreateReservationRequest request) {
+    public ReservationResponse createReservation(CreateReservationCommand request) {
         List<String> sortedSkus = request.getItems().stream()
                 .map(item -> item.getSku())
                 .distinct()

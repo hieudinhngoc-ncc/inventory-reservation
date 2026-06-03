@@ -1,6 +1,6 @@
 package com.fortna.assignment.inventory_reservation.application.service.impl;
 
-import com.fortna.assignment.inventory_reservation.api.dto.request.CreateReservationRequest;
+import com.fortna.assignment.inventory_reservation.application.command.CreateReservationCommand;
 import com.fortna.assignment.inventory_reservation.api.dto.response.ReservationResponse;
 import com.fortna.assignment.inventory_reservation.application.mapper.ReservationMapper;
 import com.fortna.assignment.inventory_reservation.domain.exception.InsufficientStockException;
@@ -33,12 +33,13 @@ public class ReservationTransactionService {
     private final ReservationMapper reservationMapper;
 
     @Transactional
-    public ReservationResponse createReservation(CreateReservationRequest request) {
+    public ReservationResponse createReservation(CreateReservationCommand request) {
         if (reservationRepository.existsByOrderId(request.getOrderId())) {
             throw new OrderAlreadyExistsException(request.getOrderId());
         }
 
-        // Sorted alphabetically — consistent lock ordering prevents deadlock across concurrent transactions
+        // Sorted alphabetically — consistent lock ordering prevents deadlock across
+        // concurrent transactions
         List<String> skus = request.getItems().stream()
                 .map(item -> item.getSku())
                 .distinct()
@@ -56,7 +57,8 @@ public class ReservationTransactionService {
         Map<String, Inventory> inventoryMap = inventories.stream()
                 .collect(Collectors.toMap(Inventory::getSku, Function.identity()));
 
-        // Validate all items before deducting anything — reject the entire request on first failure
+        // Validate all items before deducting anything — reject the entire request on
+        // first failure
         for (var itemReq : request.getItems()) {
             Inventory inventory = inventoryMap.get(itemReq.getSku());
             if (inventory.getAvailableStock() < itemReq.getQuantity()) {
@@ -65,8 +67,7 @@ public class ReservationTransactionService {
             }
         }
 
-        request.getItems().forEach(itemReq ->
-                inventoryMap.get(itemReq.getSku()).reserve(itemReq.getQuantity()));
+        request.getItems().forEach(itemReq -> inventoryMap.get(itemReq.getSku()).reserve(itemReq.getQuantity()));
 
         List<ReservationItem> items = request.getItems().stream()
                 .map(itemReq -> ReservationItem.builder()
@@ -100,8 +101,8 @@ public class ReservationTransactionService {
         Map<String, Inventory> inventoryMap = inventoryRepository.findBySkuInWithLock(skus).stream()
                 .collect(Collectors.toMap(Inventory::getSku, Function.identity()));
 
-        reservation.getItems().forEach(item ->
-                inventoryMap.get(item.getProduct().getSku()).release(item.getQuantity()));
+        reservation.getItems()
+                .forEach(item -> inventoryMap.get(item.getProduct().getSku()).release(item.getQuantity()));
 
         return reservationMapper.toResponse(reservationRepository.save(reservation));
     }

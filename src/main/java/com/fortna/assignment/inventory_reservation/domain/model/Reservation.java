@@ -55,21 +55,19 @@ public class Reservation {
     }
 
     public void confirm() {
-        currentState().confirm();
-        this.status = ReservationStatus.CONFIRMED;
+        currentState().confirm(this);
     }
 
     public void cancel() {
-        currentState().cancel();
-        this.status = ReservationStatus.CANCELLED;
+        currentState().cancel(this);
     }
 
     // Resolves the current State Pattern implementation based on the persisted status value
     private ReservationState currentState() {
         return switch (this.status) {
-            case PENDING -> new PendingState();
-            case CONFIRMED -> new ConfirmedState();
-            case CANCELLED -> new CancelledState();
+            case PENDING -> PendingState.INSTANCE;
+            case CONFIRMED -> ConfirmedState.INSTANCE;
+            case CANCELLED -> CancelledState.INSTANCE;
         };
     }
 }
