@@ -32,3 +32,8 @@ CREATE TABLE reservation_items (
     -- composite PK enforces that a single SKU cannot appear twice in the same reservation
     PRIMARY KEY (reservation_id, sku)
 );
+
+-- rollback DROP TABLE reservation_items;
+-- rollback DROP TABLE reservations;
+-- rollback DROP TABLE inventory;
+-- rollback DROP TABLE products;

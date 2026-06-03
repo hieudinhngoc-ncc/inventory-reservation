@@ -82,14 +82,14 @@ public class ReservationTransactionService {
 
     @Transactional
     public ReservationResponse confirmReservation(UUID id) {
-        Reservation reservation = findReservationWithItems(id);
+        Reservation reservation = findReservationWithItemsForUpdate(id);
         reservation.confirm();
         return reservationMapper.toResponse(reservationRepository.save(reservation));
     }
 
     @Transactional
     public ReservationResponse cancelReservation(UUID id) {
-        Reservation reservation = findReservationWithItems(id);
+        Reservation reservation = findReservationWithItemsForUpdate(id);
         reservation.cancel();
 
         // Release stock back to inventory; sorted by SKU to prevent deadlock
@@ -114,6 +114,11 @@ public class ReservationTransactionService {
 
     private Reservation findReservationWithItems(UUID id) {
         return reservationRepository.findByIdWithItems(id)
+                .orElseThrow(() -> new ReservationNotFoundException(id));
+    }
+
+    private Reservation findReservationWithItemsForUpdate(UUID id) {
+        return reservationRepository.findByIdWithItemsForUpdate(id)
                 .orElseThrow(() -> new ReservationNotFoundException(id));
     }
 }

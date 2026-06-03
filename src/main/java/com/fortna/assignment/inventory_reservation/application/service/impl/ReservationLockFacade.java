@@ -60,7 +60,21 @@ public class ReservationLockFacade implements ReservationService {
 
     @Override
     public ReservationResponse confirmReservation(UUID id) {
-        return transactionService.confirmReservation(id);
+        RLock lock = redissonClient.getLock("lock:reservation:" + id);
+        try {
+            boolean acquired = lock.tryLock(WAIT_TIME_MS, LEASE_TIME_MS, TimeUnit.MILLISECONDS);
+            if (!acquired) {
+                throw new SystemBusyException(id.toString());
+            }
+            return transactionService.confirmReservation(id);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new SystemBusyException(id.toString());
+        } finally {
+            if (lock.isHeldByCurrentThread()) {
+                lock.unlock();
+            }
+        }
     }
 
     @Override

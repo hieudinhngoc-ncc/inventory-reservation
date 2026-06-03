@@ -10,3 +10,5 @@ INSERT INTO inventory (sku, total_stock, available_stock, reserved_stock) VALUES
     ('A100', 100, 100, 0),
     ('B200',  50,  50, 0),
     ('C300', 200, 200, 0);
+-- rollback DELETE FROM inventory WHERE sku IN ('A100', 'B200', 'C300');
+-- rollback DELETE FROM products WHERE sku IN ('A100', 'B200', 'C300');

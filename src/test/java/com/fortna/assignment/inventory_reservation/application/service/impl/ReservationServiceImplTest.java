@@ -121,7 +121,7 @@ class ReservationTransactionServiceTest {
 
     @Test
     void confirmReservation_fromPending_succeeds() {
-        when(reservationRepository.findByIdWithItems(RESERVATION_ID)).thenReturn(Optional.of(pendingReservation));
+        when(reservationRepository.findByIdWithItemsForUpdate(RESERVATION_ID)).thenReturn(Optional.of(pendingReservation));
         when(reservationRepository.save(any())).thenReturn(pendingReservation);
         when(reservationMapper.toResponse(any())).thenReturn(mock(ReservationResponse.class));
 
@@ -132,7 +132,7 @@ class ReservationTransactionServiceTest {
 
     @Test
     void confirmReservation_alreadyConfirmed_throwsInvalidStateTransition() {
-        when(reservationRepository.findByIdWithItems(RESERVATION_ID)).thenReturn(Optional.of(confirmedReservation));
+        when(reservationRepository.findByIdWithItemsForUpdate(RESERVATION_ID)).thenReturn(Optional.of(confirmedReservation));
 
         assertThatThrownBy(() -> reservationService.confirmReservation(RESERVATION_ID))
                 .isInstanceOf(InvalidStateTransitionException.class);
@@ -155,7 +155,7 @@ class ReservationTransactionServiceTest {
                 .build();
         inventory = Inventory.builder().sku(SKU).totalStock(100).availableStock(90).reservedStock(10).build();
 
-        when(reservationRepository.findByIdWithItems(RESERVATION_ID)).thenReturn(Optional.of(reservation));
+        when(reservationRepository.findByIdWithItemsForUpdate(RESERVATION_ID)).thenReturn(Optional.of(reservation));
         when(inventoryRepository.findBySkuInWithLock(anyList())).thenReturn(List.of(inventory));
         when(reservationRepository.save(any())).thenReturn(reservation);
         when(reservationMapper.toResponse(any())).thenReturn(mock(ReservationResponse.class));
@@ -169,7 +169,7 @@ class ReservationTransactionServiceTest {
 
     @Test
     void cancelReservation_confirmedReservation_throwsInvalidStateTransition() {
-        when(reservationRepository.findByIdWithItems(RESERVATION_ID)).thenReturn(Optional.of(confirmedReservation));
+        when(reservationRepository.findByIdWithItemsForUpdate(RESERVATION_ID)).thenReturn(Optional.of(confirmedReservation));
 
         assertThatThrownBy(() -> reservationService.cancelReservation(RESERVATION_ID))
                 .isInstanceOf(InvalidStateTransitionException.class)
